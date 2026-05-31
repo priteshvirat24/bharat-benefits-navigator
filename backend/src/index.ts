@@ -2,29 +2,104 @@ import express from 'express';
 import cors from 'cors';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import fs from 'fs';
+import path from 'path';
+import alasql from 'alasql';
 
 const execAsync = promisify(exec);
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin: '*' })); // Allow any origin in production/deployment
 app.use(express.json({ limit: '10mb' }));
+
+function loadJSONData(filename: string) {
+  const filePath = path.join(process.cwd(), 'src', 'data', filename);
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  } catch (err) {
+    console.error(`Failed to load JSON data from ${filePath}:`, err);
+    return [];
+  }
+}
+
+// Check if we can run coral locally
+async function canRunCoral(): Promise<boolean> {
+  if (process.env.RENDER || process.env.VERCEL) return false;
+  try {
+    const { stdout } = await execAsync('which coral');
+    return stdout.trim().length > 0;
+  } catch {
+    return false;
+  }
+}
 
 // ─── CORAL SQL ENGINE ─────────────────────────────────────────────────────────
 async function runCoralSQL(sql: string): Promise<{ rows: Record<string, unknown>[]; executionTimeMs: number; sql: string }> {
   const start = Date.now();
+  const isCoralAvailable = await canRunCoral();
+  if (isCoralAvailable) {
+    try {
+      // Escape for shell
+      const escapedSQL = sql.replace(/"/g, '\\"');
+      const { stdout } = await execAsync(`coral sql --format json "${escapedSQL}"`, {
+        timeout: 30000,
+        env: { ...process.env, PATH: `/usr/local/bin:${process.env.PATH}` },
+      });
+      const executionTimeMs = Date.now() - start;
+      const rows = JSON.parse(stdout.trim());
+      return { rows: Array.isArray(rows) ? rows : [], executionTimeMs, sql };
+    } catch (error) {
+      console.warn('Coral SQL execution failed, falling back to AlaSQL:', error);
+    }
+  }
+
+  // Fallback to AlaSQL
+  const rewrittenSQL = sql
+    .replace(/application_history\.applications/gi, 'application_history_applications')
+    .replace(/central_schemes\.schemes/gi, 'central_schemes_schemes')
+    .replace(/citizen_documents\.documents/gi, 'citizen_documents_documents')
+    .replace(/issuing_authorities\.authorities/gi, 'issuing_authorities_authorities')
+    .replace(/life_events\.events/gi, 'life_events_events')
+    .replace(/scholarships\.scholarships/gi, 'scholarships_scholarships')
+    .replace(/state_schemes\.schemes/gi, 'state_schemes_schemes');
+
+  // Register tables
+  // @ts-ignore
+  alasql.tables.central_schemes_schemes = { data: loadJSONData('central-schemes.json') };
+  // @ts-ignore
+  alasql.tables.state_schemes_schemes = { data: loadJSONData('state-schemes.json') };
+  // @ts-ignore
+  alasql.tables.scholarships_scholarships = { data: loadJSONData('scholarships.json') };
+  // @ts-ignore
+  alasql.tables.citizen_documents_documents = { data: loadJSONData('citizen-documents.json') };
+  // @ts-ignore
+  alasql.tables.application_history_applications = { data: loadJSONData('application-history.json') };
+  // @ts-ignore
+  alasql.tables.issuing_authorities_authorities = { data: loadJSONData('issuing-authorities.json') };
+  // @ts-ignore
+  alasql.tables.life_events_events = { data: loadJSONData('life-events.json') };
+
+  // Register custom json_contains function for AlaSQL
+  // @ts-ignore
+  alasql.fn.json_contains = (arr: any, val: any) => {
+    try {
+      const parsedArr = typeof arr === 'string' ? JSON.parse(arr) : arr;
+      const parsedVal = typeof val === 'string' && val.startsWith('"') && val.endsWith('"') 
+        ? JSON.parse(val) 
+        : val;
+      return Array.isArray(parsedArr) && parsedArr.includes(parsedVal);
+    } catch {
+      return false;
+    }
+  };
+
   try {
-    // Escape for shell
-    const escapedSQL = sql.replace(/"/g, '\\"');
-    const { stdout } = await execAsync(`coral sql --format json "${escapedSQL}"`, {
-      timeout: 30000,
-      env: { ...process.env, PATH: `/usr/local/bin:${process.env.PATH}` },
-    });
+    const res = alasql(rewrittenSQL);
     const executionTimeMs = Date.now() - start;
-    const rows = JSON.parse(stdout.trim());
-    return { rows: Array.isArray(rows) ? rows : [], executionTimeMs, sql };
-  } catch (error) {
-    console.error('Coral SQL error:', error);
+    return { rows: Array.isArray(res) ? res : [], executionTimeMs, sql };
+  } catch (err) {
+    console.error('AlaSQL error:', err, 'SQL:', rewrittenSQL);
     return { rows: [], executionTimeMs: Date.now() - start, sql };
   }
 }
