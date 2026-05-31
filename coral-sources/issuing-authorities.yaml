@@ -1,0 +1,49 @@
+name: issuing_authorities
+version: 0.1.0
+dsl_version: 3
+backend: file
+test_queries:
+  - SELECT doc_type, issuing_authority, processing_days FROM issuing_authorities.authorities ORDER BY processing_days
+  - SELECT doc_type, fee_inr, online_portal FROM issuing_authorities.authorities WHERE online_portal IS NOT NULL
+tables:
+  - name: authorities
+    description: Government document issuing authorities with processing times, fees, and portals
+    format: json
+    source:
+      location: file:///Users/priteshhome/.gemini/antigravity-ide/scratch/bharat-benefits-navigator/backend/src/data/
+      glob: "issuing-authorities.json"
+    columns:
+      - name: authority_id
+        type: Utf8
+        description: Unique authority ID
+      - name: doc_type
+        type: Utf8
+        description: Type of document issued
+      - name: issuing_authority
+        type: Utf8
+        description: Name of the issuing authority
+      - name: state
+        type: Utf8
+        description: State where authority operates (ALL for national)
+      - name: processing_days
+        type: Int64
+        description: Average processing time in days
+      - name: fee_inr
+        type: Int64
+        description: Fee in Indian Rupees
+      - name: validity_months
+        type: Int64
+        description: Validity period in months (0 = permanent)
+      - name: renewal_possible
+        type: Boolean
+        description: Whether renewal is possible
+      - name: online_portal
+        type: Utf8
+        description: Online application portal URL
+        nullable: true
+      - name: documents_needed
+        type: Utf8
+        description: Documents required for application
+      - name: tip
+        type: Utf8
+        description: Helpful tip for the applicant

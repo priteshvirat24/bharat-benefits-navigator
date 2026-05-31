@@ -1,0 +1,57 @@
+name: application_history
+version: 0.1.0
+dsl_version: 3
+backend: file
+test_queries:
+  - SELECT scheme_name, status, rejection_reason FROM application_history.applications WHERE user_id = 'demo-user-001'
+  - SELECT status, COUNT(*) as cnt FROM application_history.applications GROUP BY status
+tables:
+  - name: applications
+    description: Citizen application history with approval/rejection status and reasons
+    format: json
+    source:
+      location: file:///Users/priteshhome/.gemini/antigravity-ide/scratch/bharat-benefits-navigator/backend/src/data/
+      glob: "application-history.json"
+    columns:
+      - name: app_id
+        type: Utf8
+        description: Unique application ID
+      - name: user_id
+        type: Utf8
+        description: User who submitted the application
+      - name: scheme_id
+        type: Utf8
+        description: Scheme the application was for
+      - name: scheme_name
+        type: Utf8
+        description: Human-readable scheme name
+      - name: status
+        type: Utf8
+        description: Application status (approved, rejected, pending, not_applied)
+      - name: applied_date
+        type: Utf8
+        description: Date application was submitted
+        nullable: true
+      - name: decision_date
+        type: Utf8
+        description: Date decision was made
+        nullable: true
+      - name: rejection_reason
+        type: Utf8
+        description: Reason for rejection (null if not rejected)
+        nullable: true
+      - name: missing_doc_at_rejection
+        type: Utf8
+        description: Which document was missing/expired at rejection time
+        nullable: true
+      - name: doc_expiry_gap_days
+        type: Int64
+        description: Days the document had been expired at rejection time
+        nullable: true
+      - name: portal
+        type: Utf8
+        description: Government portal where application was submitted
+      - name: application_ref
+        type: Utf8
+        description: Application reference number
+        nullable: true

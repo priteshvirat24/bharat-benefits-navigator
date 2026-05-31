@@ -1,0 +1,86 @@
+name: state_schemes
+version: 0.1.0
+dsl_version: 3
+backend: file
+test_queries:
+  - SELECT id, name, state, benefit_amount FROM state_schemes.schemes LIMIT 5
+  - SELECT state, COUNT(*) as scheme_count FROM state_schemes.schemes GROUP BY state ORDER BY scheme_count DESC
+tables:
+  - name: schemes
+    description: State Government welfare schemes, subsidies and grants for Indian citizens
+    format: json
+    source:
+      location: file:///Users/priteshhome/.gemini/antigravity-ide/scratch/bharat-benefits-navigator/backend/src/data/
+      glob: "state-schemes.json"
+    columns:
+      - name: id
+        type: Utf8
+        description: Unique scheme identifier
+      - name: name
+        type: Utf8
+        description: Name of the state scheme
+      - name: state
+        type: Utf8
+        description: State that offers this scheme
+      - name: ministry
+        type: Utf8
+        description: State ministry responsible for the scheme
+      - name: category
+        type: Utf8
+        description: Category of benefit
+      - name: description
+        type: Utf8
+        description: Full description of the scheme
+      - name: benefit_amount
+        type: Int64
+        description: Annual benefit amount in Indian Rupees
+      - name: benefit_type
+        type: Utf8
+        description: Type of benefit
+      - name: benefit_frequency
+        type: Utf8
+        description: How often the benefit is provided
+      - name: min_age
+        type: Int64
+        description: Minimum age of applicant
+      - name: max_age
+        type: Int64
+        description: Maximum age of applicant
+      - name: gender
+        type: Utf8
+        description: Eligible gender
+      - name: applicable_state
+        type: Utf8
+        description: State for which this scheme applies
+      - name: eligible_categories
+        type: Json
+        description: Eligible caste/category groups as JSON array
+      - name: max_income
+        type: Int64
+        description: Maximum annual family income in Rupees
+      - name: required_occupation
+        type: Json
+        description: Required occupations as JSON array
+        nullable: true
+      - name: min_education
+        type: Utf8
+        description: Minimum education qualification
+        nullable: true
+      - name: disability_required
+        type: Boolean
+        description: Whether disability certificate is required
+      - name: required_documents
+        type: Json
+        description: List of required documents
+      - name: deadline
+        type: Utf8
+        description: Application deadline
+      - name: application_url
+        type: Utf8
+        description: Official application URL
+      - name: approval_probability
+        type: Int64
+        description: Estimated approval probability
+      - name: tags
+        type: Json
+        description: Searchable tags

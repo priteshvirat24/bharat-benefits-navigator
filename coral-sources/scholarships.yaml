@@ -1,0 +1,90 @@
+name: scholarships
+version: 0.1.0
+dsl_version: 3
+backend: file
+test_queries:
+  - SELECT id, name, provider, benefit_amount FROM scholarships.scholarships LIMIT 5
+  - SELECT provider, SUM(benefit_amount) as total_benefit FROM scholarships.scholarships GROUP BY provider ORDER BY total_benefit DESC
+tables:
+  - name: scholarships
+    description: Scholarships from NSP, state portals, private/corporate providers for Indian students
+    format: json
+    source:
+      location: file:///Users/priteshhome/.gemini/antigravity-ide/scratch/bharat-benefits-navigator/backend/src/data/
+      glob: "scholarships.json"
+    columns:
+      - name: id
+        type: Utf8
+        description: Unique scholarship identifier
+      - name: name
+        type: Utf8
+        description: Name of the scholarship
+      - name: provider
+        type: Utf8
+        description: Scholarship provider (NSP, UGC, AICTE, corporate, etc.)
+      - name: category
+        type: Utf8
+        description: Category of scholarship
+      - name: description
+        type: Utf8
+        description: Full description
+      - name: benefit_amount
+        type: Int64
+        description: Annual scholarship amount in Indian Rupees
+      - name: benefit_type
+        type: Utf8
+        description: Type of benefit
+      - name: benefit_frequency
+        type: Utf8
+        description: How often the scholarship is disbursed
+      - name: min_age
+        type: Int64
+        description: Minimum age of applicant
+      - name: max_age
+        type: Int64
+        description: Maximum age of applicant
+      - name: gender
+        type: Utf8
+        description: Eligible gender
+      - name: applicable_state
+        type: Utf8
+        description: State applicability
+      - name: eligible_categories
+        type: Json
+        description: Eligible caste/category groups
+      - name: max_income
+        type: Int64
+        description: Maximum family income
+      - name: required_stream
+        type: Utf8
+        description: Required academic stream (Science, Technical, etc.)
+        nullable: true
+      - name: required_occupation
+        type: Json
+        description: Required occupations
+      - name: min_education
+        type: Utf8
+        description: Minimum education level
+        nullable: true
+      - name: max_education
+        type: Utf8
+        description: Maximum/current education level
+        nullable: true
+      - name: disability_required
+        type: Boolean
+        description: Whether disability certificate is required
+      - name: required_documents
+        type: Json
+        description: Required documents list
+      - name: deadline
+        type: Utf8
+        description: Application deadline
+      - name: application_url
+        type: Utf8
+        description: Official application URL
+      - name: approval_probability
+        type: Int64
+        description: Estimated approval probability
+      - name: tags
+        type: Json
+        description: Searchable tags

@@ -1,0 +1,42 @@
+name: life_events
+version: 0.1.0
+dsl_version: 3
+backend: file
+test_queries:
+  - SELECT life_event, label, impact_score FROM life_events.events ORDER BY impact_score DESC
+  - SELECT life_event, unlocks_categories FROM life_events.events WHERE life_event = 'college_admission'
+tables:
+  - name: events
+    description: Life events that trigger eligibility changes for government schemes
+    format: json
+    source:
+      location: file:///Users/priteshhome/.gemini/antigravity-ide/scratch/bharat-benefits-navigator/backend/src/data/
+      glob: "life-events.json"
+    columns:
+      - name: event_id
+        type: Utf8
+        description: Unique event ID
+      - name: life_event
+        type: Utf8
+        description: Machine-readable event name
+      - name: label
+        type: Utf8
+        description: Human-readable event label
+      - name: unlocks_categories
+        type: Json
+        description: Scheme categories this event unlocks (JSON array)
+      - name: unlocks_doc_types
+        type: Json
+        description: New document types available after this event
+      - name: requires_docs
+        type: Json
+        description: Documents needed to claim benefits from this event
+      - name: description
+        type: Utf8
+        description: Description of impact
+      - name: typical_age_range
+        type: Utf8
+        description: Typical age range for this event
+      - name: impact_score
+        type: Int64
+        description: Impact score (0-100)

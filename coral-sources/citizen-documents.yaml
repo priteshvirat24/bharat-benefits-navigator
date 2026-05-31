@@ -1,0 +1,48 @@
+name: citizen_documents
+version: 0.1.0
+dsl_version: 3
+backend: file
+test_queries:
+  - SELECT doc_type, status, expiry_date FROM citizen_documents.documents WHERE user_id = 'demo-user-001'
+  - SELECT doc_type, status FROM citizen_documents.documents WHERE status = 'expired'
+tables:
+  - name: documents
+    description: Citizen uploaded documents with validation status, expiry dates, and extracted fields
+    format: json
+    source:
+      location: file:///Users/priteshhome/.gemini/antigravity-ide/scratch/bharat-benefits-navigator/backend/src/data/
+      glob: "citizen-documents.json"
+    columns:
+      - name: doc_id
+        type: Utf8
+        description: Unique document ID
+      - name: user_id
+        type: Utf8
+        description: User who uploaded the document
+      - name: doc_type
+        type: Utf8
+        description: Document type (Aadhaar, Income Certificate, Caste Certificate, etc.)
+      - name: doc_name
+        type: Utf8
+        description: Descriptive document name
+      - name: status
+        type: Utf8
+        description: Document status (valid, expired, missing, not_applicable)
+      - name: issued_date
+        type: Utf8
+        description: Date document was issued
+        nullable: true
+      - name: expiry_date
+        type: Utf8
+        description: Document expiry date (null if no expiry)
+        nullable: true
+      - name: issuing_authority
+        type: Utf8
+        description: Authority that issued the document
+        nullable: true
+      - name: verified
+        type: Boolean
+        description: Whether the document has been digitally verified
+      - name: extracted_fields
+        type: Json
+        description: Fields extracted by AI/OCR from the document
