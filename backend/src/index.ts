@@ -224,21 +224,21 @@ ORDER BY benefit_amount DESC`;
   // Step 4: Optimization — prioritize by benefit amount × approval probability
   const schemes = eligibleResult.rows
     .filter(s => !approvedIds.has(s.id as string))
-    .map(s => ({
+    .map((s: any) => ({
       ...s,
       expected_value: Math.round(Number(s.benefit_amount) * Number(s.approval_probability) / 100),
       already_approved: approvedIds.has(s.id as string),
       doc_ready: true, // simplified
     }))
-    .sort((a, b) => b.expected_value - a.expected_value);
+    .sort((a: any, b: any) => b.expected_value - a.expected_value);
 
   // Step 5: Build optimal combination (no conflicts)
-  const optimal: typeof schemes = [];
+  const optimal: any[] = [];
   const usedCategories = new Set<string>();
   let totalBenefit = 0;
   let totalExpected = 0;
   
-  for (const scheme of schemes) {
+  for (const scheme of schemes as any[]) {
     // Some schemes are mutually exclusive within same category
     const cat = scheme.category as string;
     const type = scheme.benefit_type as string;

@@ -193,7 +193,12 @@ export function getClientSideEligibleSchemes(profile: CitizenProfile): Scheme[] 
 function calculateEligibilityScore(scheme: Scheme, profile: CitizenProfile): number {
   let score = 0;
   if (profile.annualIncome <= scheme.max_income) score += 25;
-  if (profile.age >= scheme.min_age && profile.age <= scheme.max_age) score += 25;
+  if (
+    (scheme.min_age === undefined || profile.age >= scheme.min_age) &&
+    (scheme.max_age === undefined || profile.age <= scheme.max_age)
+  ) {
+    score += 25;
+  }
   if (scheme.eligible_categories.includes(profile.category) || scheme.eligible_categories.includes('GEN')) score += 25;
   if (scheme.applicable_state === 'ALL' || scheme.applicable_state === profile.state) score += 25;
   if (scheme.gender && scheme.gender !== 'ALL' && scheme.gender !== profile.gender) return 0;
@@ -218,7 +223,7 @@ function getEligibilityReasons(scheme: Scheme, profile: CitizenProfile): string[
   if (scheme.eligible_categories.includes(profile.category)) {
     reasons.push(`Your category (${profile.category}) is eligible`);
   }
-  if (profile.age >= scheme.min_age && profile.age <= scheme.max_age) {
+  if (scheme.min_age !== undefined && scheme.max_age !== undefined && profile.age >= scheme.min_age && profile.age <= scheme.max_age) {
     reasons.push(`Your age (${profile.age}) falls within the eligible range`);
   }
   if (scheme.applicable_state === 'ALL' || scheme.applicable_state === profile.state) {

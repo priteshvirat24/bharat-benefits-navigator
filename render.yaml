@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: bharat-benefits-navigator-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: NODE_ENV
+        value: production

@@ -42,6 +42,10 @@ export interface Scheme {
   state?: string;
   provider?: string;
   required_stream?: string;
+  min_age?: number;
+  max_age?: number;
+  gender?: string;
+  disability_required?: boolean;
 }
 
 export interface Document {

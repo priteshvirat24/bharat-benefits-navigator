@@ -9,7 +9,7 @@ import { User, MapPin, DollarSign, GraduationCap, Save, CheckCircle } from 'luci
 export default function ProfilePage() {
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
   const [saved, setSaved] = useState(false);
-  const [activeTab, setActiveTab] = useState<'personal' | 'education' | 'family' | 'documents'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'education' | 'family' | 'location'>('personal');
 
   const update = (key: string, value: unknown) => setProfile(p => ({ ...p, [key]: value }));
 
